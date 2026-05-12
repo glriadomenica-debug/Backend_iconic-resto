@@ -81,7 +81,7 @@ class RoleController extends Controller
     {
         try {
             $rules = [
-                'name' => 'sometimes|string|max:10'
+                'name' => 'sometimes|string'
             ];
             $message = [
                 'name.required' => 'Name is required'
@@ -114,6 +114,10 @@ class RoleController extends Controller
             $role = Roles::find($id);
             if (!$role) {
                 return ApiMessage::error('Error', 'Role not found', 404);
+            }
+            //check apakah role dipakai user
+            if ($role->users()->count() > 0) {
+                return ApiMessage::error('Error', 'Role cannot be deleted because it is still used by users', 400);
             }
             $role->delete();
             return ApiMessage::success('Role successfully deleted', null, 200);
