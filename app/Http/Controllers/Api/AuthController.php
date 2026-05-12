@@ -59,7 +59,7 @@ class AuthController extends Controller
                 'email' => 'required|email',
                 'password' => 'required|string|min:6',
                 'password_confirmation' => 'required|string|same:password',
-                'role_id' => 'required|exits:role,id',
+                'role_id' => 'required|exists:roles,id',
             ];
 
             $messages = [
