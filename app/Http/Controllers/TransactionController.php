@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Transactions;
+use App\Helpers\ApiMessage;
 use Illuminate\Http\Request;
 
 class TransactionController extends Controller
@@ -12,23 +13,38 @@ class TransactionController extends Controller
      */
     public function index()
     {
-        //
+        try {
+
+            $transactions = Transactions::with([
+                'user',
+                'transactionDetails.product'
+            ])->get();
+            return ApiMessage::success('Success get transactions', $transactions, 200);
+        } catch (\Throwable $th) {
+            return ApiMessage::error($th->getMessage(), 500);
+        }
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
-    {
-        //
-    }
+    public function store(Request $request) {}
 
     /**
      * Display the specified resource.
      */
-    public function show(Transactions $transactions)
+    public function show(string $id)
     {
-        //
+        try {
+            $transaction = Transactions::with(['user', 'transactionDetails.product'])->find($id);
+
+            if (!$transaction) {
+                return ApiMessage::error('Error', 'Transaction not found', 404);
+            }
+            return ApiMessage::success('Success', $transaction, 200);
+        } catch (\Throwable $th) {
+            return ApiMessage::error($th->getMessage(), 500);
+        }
     }
 
     /**
@@ -42,8 +58,18 @@ class TransactionController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Transactions $transactions)
+    public function destroy(string $id)
     {
-        //
+        try {
+            $transaction = Transactions::find($id);
+            if (!$transaction) {
+                return ApiMessage::error('Error', 'Transaction not found', 404);
+            }
+            $transaction->delete();
+
+            return ApiMessage::success('Transaction successfully deleted', null, 200);
+        } catch (\Throwable $th) {
+            return ApiMessage::error($th->getMessage(), 500);
+        }
     }
 }
