@@ -4,46 +4,43 @@ namespace App\Http\Controllers;
 
 use App\Models\TransactionDetails;
 use Illuminate\Http\Request;
+use App\Helpers\ApiMessage;
 
 class TransactionDetailsController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        try {
+
+            $details = TransactionDetails::with([
+                'transaction',
+                'product'
+            ])->get();
+
+            return ApiMessage::success(
+                'Success get transaction details',
+                $details,
+                200
+            );
+        } catch (\Throwable $th) {
+
+            return ApiMessage::error(
+                $th->getMessage(),
+                500
+            );
+        }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function show(string $id)
     {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(TransactionDetails $transactionDetails)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, TransactionDetails $transactionDetails)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(TransactionDetails $transactionDetails)
-    {
-        //
+        try {
+            $detail = TransactionDetails::with(['transaction', 'product'])->find($id);
+            if (!$detail) {
+                return ApiMessage::error('Error', 'Transaction detail not found', 404);
+            }
+            return ApiMessage::success('Success', $detail, 200);
+        } catch (\Throwable $th) {
+            return ApiMessage::error($th->getMessage(), 500);
+        }
     }
 }
