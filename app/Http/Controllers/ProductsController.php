@@ -53,27 +53,14 @@ class ProductsController extends Controller
     public function show(string $id)
     {
         try {
-
             $product = Products::with('category')->find($id);
 
             if (!$product) {
-                return ApiMessage::error(
-                    'Error',
-                    'Product not found',
-                    404
-                );
+                return ApiMessage::error('Error', 'Product not found', 404);
             }
-            return ApiMessage::success(
-                'Success',
-                $product,
-                200
-            );
+            return ApiMessage::success('Success', $product, 200);
         } catch (\Throwable $th) {
-
-            return ApiMessage::error(
-                $th->getMessage(),
-                500
-            );
+            return ApiMessage::error($th->getMessage(), 500);
         }
     }
 
