@@ -1,8 +1,9 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use App\Models\Products;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Helpers\ApiMessage;
 use Illuminate\Support\Facades\Validator;

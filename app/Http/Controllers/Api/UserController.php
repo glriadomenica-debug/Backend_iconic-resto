@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
 use App\Helpers\ApiMessage;
 use App\Models\User;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -80,7 +81,7 @@ class UserController extends Controller
     public function show(string $id)
     {
         try {
-            $user = User::find($id);
+            $user = User::with('role')->find($id);
             if (!$user) {
                 return ApiMessage::error('Error', 'user not found', 400);
             }
