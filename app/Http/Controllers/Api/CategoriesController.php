@@ -16,8 +16,8 @@ class CategoriesController extends Controller
     public function index()
     {
         try {
-
-            $categories = Categories::with('product')->get();
+            // $categories = Categories::with('product')->get();
+            $categories = Categories::with('product')->paginate(5);
 
             return ApiMessage::success('Success get categories data', $categories, 200);
         } catch (\Throwable $th) {
@@ -107,9 +107,13 @@ class CategoriesController extends Controller
                 return ApiMessage::error('Error', 'Category not found', 404);
             }
 
-            if ($category->product()->count() > 0) {
-
-                return ApiMessage::error('Error', 'Category still has products', 400);
+            $count = $category->product()->count();
+            if ($count > 0) {
+                return ApiMessage::error(
+                    'Error',
+                    "Category is used by $count product(s). Cannot delete.",
+                    400
+                );
             }
 
             $category->delete();
