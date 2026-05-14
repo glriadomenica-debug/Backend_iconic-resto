@@ -16,14 +16,19 @@ use App\Http\Controllers\Api\TransactionDetailsController;
 Route::post('auth/login', [AuthController::class, 'login']);
 Route::post('auth/registration', [AuthController::class, 'registration']);
 Route::apiResource('roles', RoleController::class);
+Route::apiResource('categories', CategoriesController::class);
+Route::apiResource('products', ProductsController::class);
+Route::apiResource('transactions', TransactionController::class);
+Route::apiResource('transaction-details', TransactionDetailsController::class);
+Route::apiResource('users', UserController::class);
 
 //Protected Routes
 Route::middleware('auth:sanctum')->group(function () {
 
-  Route::apiResource('users', UserController::class);
+  // Route::apiResource('users', UserController::class);
   // Route::apiResource('roles', RoleController::class);
-  Route::apiResource('categories', CategoriesController::class);
-  Route::apiResource('products', ProductsController::class);
-  Route::apiResource('transactions', TransactionController::class);
-  Route::apiResource('transaction-details', TransactionDetailsController::class);
+  // Route::apiResource('categories', CategoriesController::class);
+  // Route::apiResource('products', ProductsController::class);
+  // Route::apiResource('transactions', TransactionController::class);
+  // Route::apiResource('transaction-details', TransactionDetailsController::class);
 });
