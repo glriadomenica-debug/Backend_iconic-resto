@@ -20,7 +20,6 @@ class TransactionController extends Controller
         try {
 
             $transactions = Transactions::with([
-                'user',
                 'transactionDetails.product'
             ])->get();
             return ApiMessage::success('Success get transactions', $transactions, 200);
@@ -37,7 +36,7 @@ class TransactionController extends Controller
         try {
 
             $request->validate([
-                'user_id' => 'required|exists:users,id',
+                'customer_name' => 'required|string|max:100',
                 'payment_method' => 'required|in:cash,qris,card',
                 'items' => 'required|array|min:1',
                 'items.*.product_id' => 'required|exists:products,id',
@@ -45,7 +44,7 @@ class TransactionController extends Controller
             ]);
 
             $transaction = Transactions::create([
-                'user_id' => $request->user_id,
+                'customer_name' => $request->customer_name,
                 'total_price' => 0,
                 'payment_method' => $request->payment_method,
                 'status' => 'pending'
