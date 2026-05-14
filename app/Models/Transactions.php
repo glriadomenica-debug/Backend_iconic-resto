@@ -8,6 +8,7 @@ class Transactions extends Model
 {
     protected $fillable = [
         'customer_name',
+        'table_number',
         'total_price',
         'payment_method',
         'status',

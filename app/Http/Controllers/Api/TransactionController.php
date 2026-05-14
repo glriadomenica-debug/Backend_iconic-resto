@@ -37,6 +37,7 @@ class TransactionController extends Controller
 
             $request->validate([
                 'customer_name' => 'required|string|max:100',
+                'table_number' => 'required|number',
                 'payment_method' => 'required|in:cash,qris,card',
                 'items' => 'required|array|min:1',
                 'items.*.product_id' => 'required|exists:products,id',
@@ -45,6 +46,7 @@ class TransactionController extends Controller
 
             $transaction = Transactions::create([
                 'customer_name' => $request->customer_name,
+                'table_number' => $request->table_number,
                 'total_price' => 0,
                 'payment_method' => $request->payment_method,
                 'status' => 'pending'
