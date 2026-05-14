@@ -37,7 +37,7 @@ class TransactionController extends Controller
 
             $request->validate([
                 'customer_name' => 'required|string|max:100',
-                'table_number' => 'required|number',
+                'table_number' => 'required|numeric',
                 'payment_method' => 'required|in:cash,qris,card',
                 'items' => 'required|array|min:1',
                 'items.*.product_id' => 'required|exists:products,id',
