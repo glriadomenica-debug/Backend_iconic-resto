@@ -114,9 +114,15 @@ class TransactionController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Transactions $transactions)
+    public function update(Request $request, $id)
     {
-        //
+        $transaction = Transactions::findOrFail($id);
+
+        $transaction->update([
+            'status' => $request->status
+        ]);
+
+        return ApiMessage::success('Updated', $transaction, 200);
     }
 
     public function destroy(string $id)
