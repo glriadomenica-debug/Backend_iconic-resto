@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Models\Transactions;
 use App\Http\Controllers\Controller;
 use App\Helpers\ApiMessage;
+use App\Models\Products;
+use App\Models\TransactionDetails;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class TransactionController extends Controller
 {
@@ -26,14 +29,75 @@ class TransactionController extends Controller
         }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request) {}
 
-    /**
-     * Display the specified resource.
-     */
+    public function store(Request $request)
+    {
+        DB::beginTransaction();
+
+        try {
+
+            $request->validate([
+                'user_id' => 'required|exists:users,id',
+                'payment_method' => 'required|in:cash,qris,card',
+                'items' => 'required|array|min:1',
+                'items.*.product_id' => 'required|exists:products,id',
+                'items.*.qty' => 'required|integer|min:1',
+            ]);
+
+            $transaction = Transactions::create([
+                'user_id' => $request->user_id,
+                'total_price' => 0,
+                'payment_method' => $request->payment_method,
+                'status' => 'pending'
+            ]);
+
+            $total = 0;
+
+            foreach ($request->items as $item) {
+
+                $product = Products::findOrFail($item['product_id']);
+
+                // check stock
+                if ($product->stock < $item['qty']) {
+                    return ApiMessage::error(
+                        "Stock {$product->name} tidak cukup",
+                        400
+                    );
+                }
+                //calcula subtotal
+                $subtotal = $product->price * $item['qty'];
+
+                TransactionDetails::create([
+                    'transaction_id' => $transaction->id,
+                    'product_id' => $product->id,
+                    'qty' => $item['qty'],
+                    'price' => $product->price,
+                    'subtotal' => $subtotal
+                ]);
+                // kurangi stock
+                $product->stock -= $item['qty'];
+                $product->save();
+
+                $total += $subtotal;
+            }
+
+            $transaction->update([
+                'total_price' => $total
+            ]);
+            DB::commit();
+
+            return ApiMessage::success(
+                'Transaction created successfully',
+                $transaction->load('transactionDetails.product'),
+                201
+            );
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            return ApiMessage::error($th->getMessage(), 500);
+        }
+    }
+
+
     public function show(string $id)
     {
         try {
@@ -56,9 +120,6 @@ class TransactionController extends Controller
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
         try {

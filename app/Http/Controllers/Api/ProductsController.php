@@ -16,7 +16,9 @@ class ProductsController extends Controller
     public function index()
     {
         try {
-            $products = Products::with('category')->get();
+            // $products = Products::with('category')->get();
+            $products = Products::with('category')->paginate(5);
+
             return ApiMessage::success('Success get products', $products, 200);
         } catch (\Throwable $th) {
             return ApiMessage::error($th->getMessage(),   500);
