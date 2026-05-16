@@ -23,4 +23,8 @@ class Transactions extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
+    public function paymentVerification()
+    {
+        return $this->hasOne(PaymentVerification::class, 'transaction_id');
+    }
 }
