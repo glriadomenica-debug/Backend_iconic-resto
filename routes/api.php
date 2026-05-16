@@ -23,6 +23,7 @@ Route::apiResource('transactions', TransactionController::class);
 Route::apiResource('transaction-details', TransactionDetailsController::class);
 Route::apiResource('users', UserController::class);
 Route::apiResource('paymentverification', PaymentVerificationController::class);
+Route::get('/my-orders/{token}', [TransactionController::class, 'myOrders']);
 //Protected Routes
 Route::middleware('auth:sanctum')->group(function () {
 

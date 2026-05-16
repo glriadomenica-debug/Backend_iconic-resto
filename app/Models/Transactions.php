@@ -12,6 +12,7 @@ class Transactions extends Model
         'total_price',
         'payment_method',
         'status',
+        'customer_token',
     ];
 
     public function transactionDetails()

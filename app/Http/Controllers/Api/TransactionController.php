@@ -49,7 +49,8 @@ class TransactionController extends Controller
                 'table_number' => $request->table_number,
                 'total_price' => 0,
                 'payment_method' => $request->payment_method,
-                'status' => 'pending'
+                'status' => 'pending',
+                'customer_token' => $request->customer_token,
             ]);
 
             $total = 0;
@@ -140,5 +141,20 @@ class TransactionController extends Controller
         } catch (\Throwable $th) {
             return ApiMessage::error($th->getMessage(), 500);
         }
+    }
+
+    public function myOrders($token)
+    {
+        $orders = Transactions::with([
+            'transactionDetails.product'
+        ])
+            ->where('customer_token', $token)
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'message' => 'My Orders',
+            'data' => $orders
+        ]);
     }
 }

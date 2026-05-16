@@ -41,6 +41,7 @@ class AuthController extends Controller
         if (!Hash::check($request->password, $user->password)) {
             return ApiMessage::error('Error', 'User or Password is incorrect', 401);
         }
+        $user->load('role');
 
         $token = $user->createToken('auth_token')->plainTextToken;
         $data = [
