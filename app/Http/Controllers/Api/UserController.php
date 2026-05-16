@@ -44,7 +44,7 @@ class UserController extends Controller
                 'email.email' => 'Email must be a valid email address',
                 'password.required' => 'Password is required',
                 'password.max' => 'Password must be at least 12 characters',
-                'password_confirmation' => 'Password confirmation is required',
+                'password_confirmation.required' => 'Password confirmation is required',
                 'password_confirmation.same' => 'Password confirmation must be matched with password',
             ];
 
@@ -100,7 +100,7 @@ class UserController extends Controller
             $rules = [
                 'name' => 'sometimes|string',
                 'email' => 'sometimes|email',
-                'password' => 'sometimes|password|max:12',
+                'password' => 'sometimes|string|max:12',
                 'password_confirmation' => 'sometimes|same:password',
             ];
             $messages = [
