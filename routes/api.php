@@ -9,7 +9,8 @@ use App\Http\Controllers\Api\CategoriesController;
 use App\Http\Controllers\Api\ProductsController;
 use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\TransactionDetailsController;
-use App\Http\Controllers\PaymentVerificationController;
+use App\Http\Controllers\Api\PaymentVerificationController;
+use App\Http\Controllers\Api\StaffController;
 
 //Public routes
 
@@ -24,6 +25,7 @@ Route::apiResource('transaction-details', TransactionDetailsController::class);
 Route::apiResource('users', UserController::class);
 Route::apiResource('paymentverification', PaymentVerificationController::class);
 Route::get('/my-orders/{token}', [TransactionController::class, 'myOrders']);
+Route::apiResource('staff', StaffController::class);
 //Protected Routes
 Route::middleware('auth:sanctum')->group(function () {
 

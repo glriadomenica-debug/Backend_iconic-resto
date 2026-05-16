@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\PaymentVerification;
 use App\Models\Transactions;
 use Illuminate\Http\Request;
