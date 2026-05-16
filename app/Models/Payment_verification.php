@@ -16,9 +16,4 @@ class PaymentVerification extends Model
     {
         return $this->belongsTo(Transactions::class, 'transaction_id');
     }
-
-    public function verifier()
-    {
-        return $this->belongsTo(User::class, 'verified_by');
-    }
 }

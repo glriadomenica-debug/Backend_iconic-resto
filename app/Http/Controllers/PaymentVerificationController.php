@@ -21,6 +21,7 @@ class PaymentVerificationController extends Controller
             'transaction_id' => $transaction->id,
             'verified_by' => Auth::id(),
             'verified_at' => now(),
+            'payment_method' => $request->payment_method,
         ]);
 
         // update status transaction

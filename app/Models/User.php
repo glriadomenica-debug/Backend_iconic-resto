@@ -50,10 +50,6 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Roles::class, 'role_id');
     }
-    public function verifiedPayments()
-    {
-        return $this->hasMany(PaymentVerification::class, 'verified_by');
-    }
 
     // public function transactions()
     // {
