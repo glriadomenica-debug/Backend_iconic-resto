@@ -103,7 +103,7 @@ class TransactionController extends Controller
     public function show(string $id)
     {
         try {
-            $transaction = Transactions::with(['user', 'transactionDetails.product'])->find($id);
+            $transaction = Transactions::with(['transactionDetails.product'])->find($id);
 
             if (!$transaction) {
                 return ApiMessage::error('Error', 'Transaction not found', 404);
@@ -121,6 +121,9 @@ class TransactionController extends Controller
     {
         $transaction = Transactions::findOrFail($id);
 
+        $request->validate([
+            'status' => 'required|in:pending,cooking,ready,served,paid,cancelled'
+        ]);
         $transaction->update([
             'status' => $request->status
         ]);
@@ -156,5 +159,25 @@ class TransactionController extends Controller
             'message' => 'My Orders',
             'data' => $orders
         ]);
+    }
+
+    public function kitchenOrders()
+    {
+        try {
+            $transactions = Transactions::with([
+                'transactionDetails.product'
+            ])
+                ->whereIn('status', ['pending', 'cooking', 'ready'])
+                ->orderBy('created_at', 'asc')
+                ->get();
+
+            return ApiMessage::success(
+                'Success get kitchen orders',
+                $transactions,
+                200
+            );
+        } catch (\Throwable $th) {
+            return ApiMessage::error($th->getMessage(), 500);
+        }
     }
 }

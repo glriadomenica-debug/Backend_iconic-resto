@@ -25,6 +25,7 @@ Route::apiResource('transaction-details', TransactionDetailsController::class);
 Route::apiResource('users', UserController::class);
 Route::apiResource('paymentverification', PaymentVerificationController::class);
 Route::get('/my-orders/{token}', [TransactionController::class, 'myOrders']);
+Route::get('/kitchen/orders', [TransactionController::class, 'kitchenOrders']);
 Route::apiResource('staff', StaffController::class);
 //Protected Routes
 Route::middleware('auth:sanctum')->group(function () {
