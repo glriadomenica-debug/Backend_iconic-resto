@@ -36,7 +36,7 @@ class ProductsController extends Controller
                 'product_name' => 'required|string',
                 'price' => 'required|numeric',
                 'stock' => 'required|integer',
-                'image' => 'nullable|string'
+                'image' => 'required|string'
             ];
             $validator = Validator::make($request->all(), $rules);
 

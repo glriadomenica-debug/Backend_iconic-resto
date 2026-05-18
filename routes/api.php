@@ -28,6 +28,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('staff', StaffController::class);
     Route::apiResource('transaction-details', TransactionDetailsController::class);
     Route::post('products', [ProductsController::class, 'store']);
+    Route::put('products/{id}', [ProductsController::class, 'update']);
   });
 
   Route::middleware(['role:admin,kasir'])->group(function () {
