@@ -23,10 +23,18 @@ Route::apiResource('products', ProductsController::class);
 Route::apiResource('transactions', TransactionController::class);
 Route::apiResource('transaction-details', TransactionDetailsController::class);
 Route::apiResource('users', UserController::class);
-Route::apiResource('paymentverification', PaymentVerificationController::class);
 Route::get('/my-orders/{token}', [TransactionController::class, 'myOrders']);
 Route::get('/kitchen/orders', [TransactionController::class, 'kitchenOrders']);
 Route::apiResource('staff', StaffController::class);
+Route::post(
+  '/payment-verifications/{transactionId}',
+  [PaymentVerificationController::class, 'store']
+);
+
+Route::get(
+  '/payment-verifications/{transactionId}',
+  [PaymentVerificationController::class, 'show']
+);
 //Protected Routes
 Route::middleware('auth:sanctum')->group(function () {
 

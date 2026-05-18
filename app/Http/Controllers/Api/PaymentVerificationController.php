@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\PaymentVerification;
 use App\Models\Transactions;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class PaymentVerificationController extends Controller
 {
@@ -20,7 +19,7 @@ class PaymentVerificationController extends Controller
         // simpan verifikasi pembayaran
         $paymentVerification = PaymentVerification::create([
             'transaction_id' => $transaction->id,
-            'verified_by' => Auth::id(),
+            'verified_by' => $request->verified_by,
             'verified_at' => now(),
             'payment_method' => $request->payment_method,
         ]);
@@ -41,10 +40,7 @@ class PaymentVerificationController extends Controller
      */
     public function show($transactionId)
     {
-        $paymentVerification = PaymentVerification::with([
-            'transaction',
-            'verifier'
-        ])->where('transaction_id', $transactionId)->first();
+        $paymentVerification = PaymentVerification::where('transaction_id', $transactionId)->first();
 
         if (!$paymentVerification) {
             return response()->json([
