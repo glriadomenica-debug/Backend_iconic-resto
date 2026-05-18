@@ -21,7 +21,8 @@ class TransactionController extends Controller
 
             $transactions = Transactions::with([
                 'transactionDetails.product'
-            ])->get();
+            ])->orderBy('created_at', 'desc')
+            ->paginate(6);
             return ApiMessage::success('Success get transactions', $transactions, 200);
         } catch (\Throwable $th) {
             return ApiMessage::error($th->getMessage(), 500);
