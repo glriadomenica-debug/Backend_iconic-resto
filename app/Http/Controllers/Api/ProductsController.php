@@ -17,7 +17,7 @@ class ProductsController extends Controller
     {
         try {
             // $products = Products::with('category')->get();
-            $products = Products::with('category')->paginate(8);
+            $products = Products::with('category')->paginate(9);
 
             return ApiMessage::success('Success get products', $products, 200);
         } catch (\Throwable $th) {
