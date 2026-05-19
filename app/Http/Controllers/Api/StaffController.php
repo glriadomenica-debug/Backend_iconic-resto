@@ -30,6 +30,7 @@ class StaffController extends Controller
                 'sex' => 'required|in:male,female',
                 'phone_number' => 'nullable|string|max:25',
                 'email' => 'required|email|unique:staff,email',
+                'position' => 'required|string',
             ];
 
             $message = [
@@ -37,6 +38,7 @@ class StaffController extends Controller
                 'last_name.required' => 'last name is required',
                 'sex.required' => 'Sex is required',
                 'email.required' => 'Email is required',
+                'position.required' => 'Staff position is required'
             ];
             $validator = Validator::make($request->all(), $rule, $message);
             if ($validator->fails()) {
@@ -58,6 +60,7 @@ class StaffController extends Controller
                 $staff->sex = $request->sex;
                 $staff->phone_number = $request->phone_number;
                 $staff->email = $request->email;
+                $staff->position = $request->position;
                 $staff->save();
 
                 DB::commit();
@@ -112,6 +115,7 @@ class StaffController extends Controller
                 'sex' => 'sometimes|in:male,female',
                 'phone_number' => 'nullable|string|max:25',
                 'email' => 'sometimes|email|unique:staff,email,' . $id,
+                'position' => 'sometimes|string|max:255',
             ];
             $validator = Validator::make(
                 $request->all(),

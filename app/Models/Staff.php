@@ -14,5 +14,6 @@ class Staff extends Model
         'sex',
         'phone_number',
         'email',
+        'position',
     ];
 }

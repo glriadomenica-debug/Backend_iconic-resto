@@ -19,6 +19,7 @@ Route::get('/my-orders/{token}', [TransactionController::class, 'myOrders']);
 Route::get('products', [ProductsController::class, 'index']);
 Route::get('products/{product}', [ProductsController::class, 'show']);
 
+
 //Private (access by role)
 Route::middleware(['auth:sanctum'])->group(function () {
   Route::middleware(['role:admin'])->group(function () {
@@ -32,9 +33,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
   });
 
   Route::middleware(['role:admin,kasir'])->group(function () {
-
-    // Route::apiResource('transactions', TransactionController::class);
-
     // Payment verification
     Route::post(
       '/payment-verifications/{transactionId}',
