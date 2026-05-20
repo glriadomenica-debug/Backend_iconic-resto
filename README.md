@@ -1,66 +1,325 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# 🍽️ Point of Sale - Backend API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Backend REST API for **Self Order System** built using Laravel.  
+This API handles authentication, transactions, kitchen workflows, payment verification, analytics, and reporting systems for restaurant operations.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+# ✨ Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 🔐 Authentication
+- Login authentication using Laravel Sanctum
+- Role-based access control
+- Protected API routes
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+# 👥 User Roles
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+| Role | Access |
+|---|---|
+| Admin | Full system access |
+| Cashier | Payment verification |
+| Kitchen | Kitchen order management |
+| Customer | Self ordering |
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+# 🍽️ Main Features
 
-## Laravel Sponsors
+## 👨‍🍳 Customer Features
+- Create orders
+- View customer orders
+- Self-order system
+- Payment method selection
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 🍳 Kitchen Features
+- View incoming kitchen orders
+- Update cooking status
+- Order workflow management
 
-### Premium Partners
+## 🧾 Cashier Features
+- Verify customer payments
+- Payment confirmation
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+## 🛠️ Admin Features
+- User management
+- Role management
+- Product management
+- Category management
+- Staff management
+- Transaction management
+- Analytics dashboard API
+- Transaction reports API
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+# 🧑‍💻 Tech Stack
 
-## Code of Conduct
+## Backend
+- Laravel
+- Laravel Sanctum
+- MySQL
+- Eloquent ORM
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## API Features
+- RESTful API
+- Role middleware
+- Transaction management
+- Analytics API
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# 📁 Project Structure
 
-## License
+```bash
+app/
+├── Helpers/
+├── Http/
+│   ├── Controllers/
+│   │   └── Api/
+├── Models/
+├── Middleware/
+routes/
+├── api.php
+database/
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+# 🗄️ Database Relationships
+
+```txt
+Roles 1 : N Users
+Categories 1 : N Products
+Transactions 1 : N TransactionDetails
+Products 1 : N TransactionDetails
+Transactions 1 : 1 PaymentVerification
+```
+
+---
+
+# 🔐 Authentication
+
+Authentication uses:
+
+```txt
+Laravel Sanctum
+```
+
+Protected routes use:
+
+```php
+Route::middleware(['auth:sanctum'])
+```
+
+---
+
+# 🛣️ API Routes
+
+## Public Routes
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/api/auth/login` | User login |
+| POST | `/api/transactions` | Create transaction |
+| GET | `/api/my-orders/{token}` | Customer order tracking |
+| GET | `/api/products` | Get all products |
+| GET | `/api/products/{id}` | Get product detail |
+
+---
+
+## Admin Routes
+
+| Method | Endpoint |
+|---|---|
+| GET | `/api/transactions/report` |
+| GET | `/api/transactions/analytics` |
+| API Resource | `/api/users` |
+| API Resource | `/api/roles` |
+| API Resource | `/api/categories` |
+| API Resource | `/api/staff` |
+
+---
+
+## Cashier Routes
+
+| Method | Endpoint |
+|---|---|
+| POST | `/api/payment-verifications/{transactionId}` |
+| GET | `/api/payment-verifications/{transactionId}` |
+
+---
+
+## Kitchen Routes
+
+| Method | Endpoint |
+|---|---|
+| GET | `/api/kitchen/orders` |
+
+---
+
+# 📊 Analytics API
+
+Analytics endpoint:
+
+```txt
+/api/transactions/analytics
+```
+
+Analytics include:
+- Total revenue
+- Total paid transactions
+- Most ordered products
+- Revenue charts
+
+Only transactions with:
+
+```txt
+status = paid
+```
+
+are included in analytics calculations.
+
+---
+
+# 📄 Reporting System
+
+Transaction reports include:
+- Total revenue
+- Best seller products
+- Most used payment method
+- Product sales statistics
+
+---
+
+# 🚀 Installation
+
+## 1. Clone Repository
+
+```bash
+git clone https://github.com/glriadomenica-debug/Backend_iconic-resto.git
+```
+
+---
+
+## 2. Go To Project Folder
+
+```bash
+cd Backend_iconic-resto
+```
+
+---
+
+## 3. Install Dependencies
+
+```bash
+composer install
+```
+
+---
+
+## 4. Environment Setup
+
+Copy `.env`:
+
+```bash
+cp .env.example .env
+```
+
+---
+
+## 5. Generate Application Key
+
+```bash
+php artisan key:generate
+```
+
+---
+
+## 6. Configure Database
+
+Edit `.env`:
+
+```env
+DB_DATABASE=iconic_resto
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+---
+
+## 7. Run Migration
+
+```bash
+php artisan migrate
+```
+
+---
+
+## 8. Run Laravel Server
+
+```bash
+php artisan serve
+```
+
+Server:
+
+```txt
+http://localhost:8000
+```
+
+---
+
+# 🔄 Transaction Workflow
+
+```txt
+pending
+   ↓
+cooking
+   ↓
+ready
+   ↓
+served
+   ↓
+paid
+```
+
+---
+
+# 📦 API Response Format
+
+Example success response:
+
+```json
+{
+  "status": "success",
+  "message": "Success get transactions",
+  "data": []
+}
+```
+
+---
+
+# 🧠 System Overview
+
+This backend powers a restaurant self-ordering system where:
+- customers place orders independently,
+- kitchen staff manage food preparation,
+- cashiers verify payments,
+- admins monitor business analytics.
+
+---
+
+# 📄 License
+
+This project is for educational and portfolio purposes.
+
+---
+
+# 👩‍💻 Developer
+
+Developed by Gloria Domenica Ferreira Da Costa E Silva
+
+GitHub:
+https://github.com/glriadomenica-debug
