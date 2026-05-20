@@ -22,7 +22,7 @@ class TransactionController extends Controller
             $transactions = Transactions::with([
                 'transactionDetails.product'
             ])->orderBy('created_at', 'desc')
-            ->paginate(10);
+                ->paginate(10);
             return ApiMessage::success('Success get transactions', $transactions, 200);
         } catch (\Throwable $th) {
             return ApiMessage::error($th->getMessage(), 500);
@@ -180,5 +180,28 @@ class TransactionController extends Controller
         } catch (\Throwable $th) {
             return ApiMessage::error($th->getMessage(), 500);
         }
+    }
+
+    public function report()
+    {
+        $transactions = Transactions::with([
+            'transactionDetails.product'
+        ])->get();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $transactions
+        ]);
+    }
+
+    public function analytics()
+    {
+        $transactions = Transactions::with('transactionDetails.product')
+            ->where('status', 'paid')
+            ->get();
+
+        return response()->json([
+            'data' => $transactions
+        ]);
     }
 }
