@@ -36,6 +36,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
   Route::middleware(['role:admin,kasir'])->group(function () {
     // Payment verification
+    Route::get(
+      '/transactions/{transactionId}/details',
+      [TransactionDetailsController::class, 'showByTransaction']
+    );
     Route::post(
       '/payment-verifications/{transactionId}',
       [PaymentVerificationController::class, 'store']

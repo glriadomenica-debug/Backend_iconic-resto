@@ -43,4 +43,15 @@ class TransactionDetailsController extends Controller
             return ApiMessage::error($th->getMessage(), 500);
         }
     }
+
+    public function showByTransaction($transactionId)
+    {
+        $details = TransactionDetails::with('product')
+            ->where('transaction_id', $transactionId)
+            ->get();
+
+        return response()->json([
+            'data' => $details
+        ]);
+    }
 }

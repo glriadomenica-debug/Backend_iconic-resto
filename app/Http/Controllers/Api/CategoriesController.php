@@ -17,7 +17,7 @@ class CategoriesController extends Controller
     {
         try {
             // $categories = Categories::with('product')->get();
-            $categories = Categories::with('product')->paginate(5);
+            $categories = Categories::with('product')->paginate(10);
 
             return ApiMessage::success('Success get categories data', $categories, 200);
         } catch (\Throwable $th) {
