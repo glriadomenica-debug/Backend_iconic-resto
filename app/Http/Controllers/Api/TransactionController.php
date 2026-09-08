@@ -9,6 +9,7 @@ use App\Models\Products;
 use App\Models\TransactionDetails;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class TransactionController extends Controller
 {
@@ -29,13 +30,9 @@ class TransactionController extends Controller
         }
     }
 
-
     public function store(Request $request)
     {
-        DB::beginTransaction();
-
         try {
-
             $request->validate([
                 'customer_name' => 'required|string|max:100',
                 'table_number' => 'required|numeric',
@@ -45,60 +42,199 @@ class TransactionController extends Controller
                 'items.*.qty' => 'required|integer|min:1',
             ]);
 
-            $transaction = Transactions::create([
-                'customer_name' => $request->customer_name,
-                'table_number' => $request->table_number,
-                'total_price' => 0,
-                'payment_method' => $request->payment_method,
-                'status' => 'pending',
-                'customer_token' => $request->customer_token,
-            ]);
+            $result = DB::transaction(function () use ($request) {
 
-            $total = 0;
+                // ==========================================
+                // 1. CHECK ALL STOCK FIRST
+                // ==========================================
+                foreach ($request->items as $item) {
+                    $product = Products::where('id', $item['product_id'])
+                        ->lockForUpdate()
+                        ->first();
 
-            foreach ($request->items as $item) {
+                    if (!$product) {
+                        throw new \Exception(
+                            "Product with ID {$item['product_id']} not found."
+                        );
+                    }
 
-                $product = Products::findOrFail($item['product_id']);
-
-                // check stock
-                if ($product->stock < $item['qty']) {
-                    return ApiMessage::error(
-                        "Stock {$product->name} tidak cukup",
-                        400
-                    );
+                    if ($product->stock < $item['qty']) {
+                        throw new \Exception(
+                            "Only {$product->stock} {$product->product_name} available."
+                        );
+                    }
                 }
-                //calcula subtotal
-                $subtotal = $product->price * $item['qty'];
 
-                TransactionDetails::create([
-                    'transaction_id' => $transaction->id,
-                    'product_id' => $product->id,
-                    'qty' => $item['qty'],
-                    'price' => $product->price,
-                    'subtotal' => $subtotal
+                // ==========================================
+                // 2. DETERMINE QUEUE PERIOD
+                // ==========================================
+                $now = Carbon::now('Asia/Dili');
+
+                if ($now->hour < 8) {
+                    // Before 08:00 → belongs to previous queue day
+                    $queueDate = $now->copy()->subDay()->toDateString();
+                } else {
+                    // 08:00 onwards → belongs to today
+                    $queueDate = $now->toDateString();
+                }
+
+                // ==========================================
+                // 3. GET NEXT QUEUE NUMBER
+                // ==========================================
+                $lastQueue = Transactions::whereDate('queue_date', $queueDate)
+                    ->lockForUpdate()
+                    ->max('queue_number');
+
+                $queueNumber = ($lastQueue ?? 0) + 1;
+
+                // ==========================================
+                // 4. CREATE TRANSACTION
+                // ==========================================
+                $transaction = Transactions::create([
+                    'customer_name' => $request->customer_name,
+                    'table_number' => $request->table_number,
+                    'total_price' => 0,
+                    'payment_method' => $request->payment_method,
+                    'payment_status' => 'unpaid',
+                    'kitchen_status' => 'pending',
+                    // 'status' => 'pending',
+                    'customer_token' => $request->customer_token,
+                    'queue_number' => $queueNumber,
+                    'queue_date' => $queueDate,
                 ]);
-                // kurangi stock
-                $product->stock -= $item['qty'];
-                $product->save();
 
-                $total += $subtotal;
-            }
+                $total = 0;
 
-            $transaction->update([
-                'total_price' => $total
-            ]);
-            DB::commit();
+                // ==========================================
+                // 5. CREATE DETAILS + REDUCE STOCK
+                // ==========================================
+                foreach ($request->items as $item) {
+
+                    $product = Products::where('id', $item['product_id'])
+                        ->lockForUpdate()
+                        ->first();
+
+                    $subtotal = $product->price * $item['qty'];
+
+                    TransactionDetails::create([
+                        'transaction_id' => $transaction->id,
+                        'product_id' => $product->id,
+                        'qty' => $item['qty'],
+                        'price' => $product->price,
+                        'subtotal' => $subtotal,
+                    ]);
+
+                    $product->decrement('stock', $item['qty']);
+
+                    $total += $subtotal;
+                }
+
+                // ==========================================
+                // 6. UPDATE TOTAL
+                // ==========================================
+                $transaction->update([
+                    'total_price' => $total,
+                ]);
+
+                return $transaction->load('transactionDetails.product');
+            });
 
             return ApiMessage::success(
                 'Transaction created successfully',
-                $transaction->load('transactionDetails.product'),
+                $result,
                 201
             );
         } catch (\Throwable $th) {
-            DB::rollBack();
-            return ApiMessage::error($th->getMessage(), 500);
+
+            if (
+                str_contains(
+                    strtolower($th->getMessage()),
+                    'available'
+                )
+            ) {
+                return ApiMessage::error(
+                    $th->getMessage(),
+                    409
+                );
+            }
+
+            return ApiMessage::error(
+                $th->getMessage(),
+                500
+            );
         }
     }
+
+
+    // public function store(Request $request)
+    // {
+    //     DB::beginTransaction();
+
+    //     try {
+
+    //         $request->validate([
+    //             'customer_name' => 'required|string|max:100',
+    //             'table_number' => 'required|numeric',
+    //             'payment_method' => 'required|in:cashier_payment,self_payment',
+    //             'items' => 'required|array|min:1',
+    //             'items.*.product_id' => 'required|exists:products,id',
+    //             'items.*.qty' => 'required|integer|min:1',
+    //         ]);
+
+    //         $transaction = Transactions::create([
+    //             'customer_name' => $request->customer_name,
+    //             'table_number' => $request->table_number,
+    //             'total_price' => 0,
+    //             'payment_method' => $request->payment_method,
+    //             'status' => 'pending',
+    //             'customer_token' => $request->customer_token,
+    //         ]);
+
+    //         $total = 0;
+
+    //         foreach ($request->items as $item) {
+
+    //             $product = Products::findOrFail($item['product_id']);
+
+    //             // check stock
+    //             if ($product->stock < $item['qty']) {
+    //                 return ApiMessage::error(
+    //                     "Stock {$product->name} tidak cukup",
+    //                     400
+    //                 );
+    //             }
+    //             //calcula subtotal
+    //             $subtotal = $product->price * $item['qty'];
+
+    //             TransactionDetails::create([
+    //                 'transaction_id' => $transaction->id,
+    //                 'product_id' => $product->id,
+    //                 'qty' => $item['qty'],
+    //                 'price' => $product->price,
+    //                 'subtotal' => $subtotal
+    //             ]);
+    //             // kurangi stock
+    //             $product->stock -= $item['qty'];
+    //             $product->save();
+
+    //             $total += $subtotal;
+    //         }
+
+    //         $transaction->update([
+    //             'total_price' => $total
+    //         ]);
+    //         DB::commit();
+
+    //         return ApiMessage::success(
+    //             'Transaction created successfully',
+    //             $transaction->load('transactionDetails.product'),
+    //             201
+    //         );
+    //     } catch (\Throwable $th) {
+    //         DB::rollBack();
+    //         return ApiMessage::error($th->getMessage(), 500);
+    //     }
+    // }
 
 
     public function show(string $id)
@@ -123,13 +259,18 @@ class TransactionController extends Controller
         $transaction = Transactions::findOrFail($id);
 
         $request->validate([
-            'status' => 'required|in:pending,cooking,ready,served,paid,cancelled'
-        ]);
-        $transaction->update([
-            'status' => $request->status
+            'kitchen_status' => 'required|in:pending,cooking,ready,served',
         ]);
 
-        return ApiMessage::success('Updated', $transaction, 200);
+        $transaction->update([
+            'kitchen_status' => $request->kitchen_status,
+        ]);
+
+        return ApiMessage::success(
+            'Kitchen status updated',
+            $transaction,
+            200
+        );
     }
 
     public function destroy(string $id)
@@ -162,13 +303,17 @@ class TransactionController extends Controller
         ]);
     }
 
+
     public function kitchenOrders()
     {
         try {
             $transactions = Transactions::with([
                 'transactionDetails.product'
             ])
-                ->whereIn('status', ['pending', 'cooking', 'ready'])
+                ->whereIn('kitchen_status', [
+                    'pending',
+                    'cooking',
+                ])
                 ->orderBy('created_at', 'asc')
                 ->get();
 
@@ -178,7 +323,10 @@ class TransactionController extends Controller
                 200
             );
         } catch (\Throwable $th) {
-            return ApiMessage::error($th->getMessage(), 500);
+            return ApiMessage::error(
+                $th->getMessage(),
+                500
+            );
         }
     }
 
@@ -197,7 +345,7 @@ class TransactionController extends Controller
     public function analytics()
     {
         $transactions = Transactions::with('transactionDetails.product')
-            ->where('status', 'paid')
+            ->where('payment_status', 'paid')
             ->get();
 
         return response()->json([

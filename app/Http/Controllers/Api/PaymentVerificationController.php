@@ -16,7 +16,13 @@ class PaymentVerificationController extends Controller
     {
         $transaction = Transactions::findOrFail($transactionId);
 
-        // simpan verifikasi pembayaran
+        // Jangan buat verification duplicate
+        if ($transaction->payment_status === 'paid') {
+            return response()->json([
+                'message' => 'Payment already verified'
+            ], 409);
+        }
+
         $paymentVerification = PaymentVerification::create([
             'transaction_id' => $transaction->id,
             'verified_by' => $request->verified_by,
@@ -24,9 +30,9 @@ class PaymentVerificationController extends Controller
             'payment_method' => $request->payment_method,
         ]);
 
-        // update status transaction
+        // HANYA ubah PAYMENT STATUS
         $transaction->update([
-            'status' => 'paid'
+            'payment_status' => 'paid',
         ]);
 
         return response()->json([

@@ -11,8 +11,12 @@ class Transactions extends Model
         'table_number',
         'total_price',
         'payment_method',
+        'payment_status',
+        'kitchen_status',
         'status',
         'customer_token',
+        'queue_number',
+        'queue_date',
     ];
 
     public function transactionDetails()
