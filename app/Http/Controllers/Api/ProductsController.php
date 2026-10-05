@@ -15,24 +15,17 @@ class ProductsController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $products = Products::with([
-                'category',
-                'sizes',
-            ])->paginate(9);
-
-            return ApiMessage::success(
-                'Success get products',
-                $products,
-                200
-            );
+            $query = Products::with(['category', 'sizes',]);
+            if ($request->filled('category_id')) {
+                $query->where('category_id', $request->category_id);
+            }
+            $products = $query->paginate(9);
+            return ApiMessage::success('Success get products', $products, 200);
         } catch (\Throwable $th) {
-            return ApiMessage::error(
-                $th->getMessage(),
-                500
-            );
+            return ApiMessage::error($th->getMessage(), 500);
         }
     }
 
@@ -46,12 +39,13 @@ class ProductsController extends Controller
                 'category_id' => 'required|exists:categories,id',
                 'product_name' => 'required|string|max:255',
                 'stock' => 'required|integer|min:0',
-                'image' => 'nullable|string',
-                'sizes' => 'required|array|min:1',
+                'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+                'sizes' => 'required|array|min:1|max:3',
                 'sizes.*.size' => [
                     'required',
                     'string',
                     'in:Small,Medium,Large',
+                    'distinct',
                 ],
 
                 'sizes.*.price' => [
@@ -76,16 +70,23 @@ class ProductsController extends Controller
 
             DB::beginTransaction();
 
+            $imagePath = null;
+
+            if ($request->hasFile('image')) {
+                $imagePath = $request
+                    ->file('image')
+                    ->store('products', 'public');
+            }
+
             $product = Products::create([
                 'category_id' => $request->category_id,
                 'product_name' => $request->product_name,
                 'price' => $request->sizes[0]['price'],
                 'stock' => $request->stock,
-                'image' => $request->image,
+                'image' => $imagePath,
             ]);
 
             foreach ($request->sizes as $size) {
-
                 ProductSize::create([
                     'product_id' => $product->id,
                     'size' => $size['size'],
@@ -154,34 +155,34 @@ class ProductsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(
-        Request $request,
-        string $id
-    ) {
+    public function update(Request $request, string $id)
+    {
         try {
             $product = Products::find($id);
-            if (!$product) {
 
+            if (!$product) {
                 return ApiMessage::error(
                     'Error',
                     'Product not found',
                     404
                 );
             }
+
             $rules = [
-                'category_id' => 'required|exists:categories,id',
-                'product_name' => 'required|string|max:255',
-                'stock' => 'required|integer|min:0',
-                'image' => 'nullable|string',
-                'sizes' => 'required|array|min:1',
+                'category_id' => 'sometimes|exists:categories,id',
+                'product_name' => 'sometimes|string|max:255',
+                'stock' => 'sometimes|integer|min:0',
+                'image' => 'sometimes|image|mimes:jpg,jpeg,png,webp|max:5120',
+                'sizes' => 'sometimes|array|min:1|max:3',
                 'sizes.*.size' => [
-                    'required',
+                    'sometimes',
                     'string',
                     'in:Small,Medium,Large',
+                    'distinct',
                 ],
 
                 'sizes.*.price' => [
-                    'required',
+                    'sometimes',
                     'numeric',
                     'min:0.01',
                 ],
@@ -193,7 +194,6 @@ class ProductsController extends Controller
             );
 
             if ($validator->fails()) {
-
                 return ApiMessage::error(
                     'Validation Error',
                     $validator->errors(),
@@ -206,10 +206,22 @@ class ProductsController extends Controller
             $product->update([
                 'category_id' => $request->category_id,
                 'product_name' => $request->product_name,
+
                 'price' => $request->sizes[0]['price'],
+
                 'stock' => $request->stock,
-                'image' => $request->image,
             ]);
+
+            if ($request->hasFile('image')) {
+
+                $imagePath = $request
+                    ->file('image')
+                    ->store('products', 'public');
+
+                $product->update([
+                    'image' => $imagePath,
+                ]);
+            }
 
             $product->sizes()->delete();
 
